@@ -1,12 +1,18 @@
 import json
 import requests
 import io
+import os
 import base64
 from PIL import Image, PngImagePlugin
 import time
 from datetime import datetime
 
 url = "http://127.0.0.1:7860"
+
+datetimenow = datetime.now()
+formatted_date = datetimenow.strftime("%Y%m%d")
+
+output_dir = f'C:/Users/mokos/Stable_Diffusion/sd.webui/webui/outputs/{formatted_date}_api_output/'
 
 # prompt var
 ## photo quality
@@ -160,30 +166,25 @@ override_settings["sd_model_checkpoint"] = "beautifulRealistic_v60"
 #override_settings["sd_vae"] = "v2-1_768-ema-pruned"
 
 # loop and seed settings
-loop = 20
+loop = 1
 seed = -1
 #enable_hr = False
 enable_hr = True
 
-#prompt = f"{quality}, {quality2}, {age}, {cloth}, {face}, {hair}, {place}, {chest}, {angle}, {makeup}, {addition}, {addition2}"
-# prompt = f"{quality1}, {person1}, {quality3}, {angle1}, {age1}, {chest2}, {addition2}, {hair1}, {pose2}, {place4}, {style1}"
-# prompt = f"{quality1}, {person1}, {quality3}, {angle3}, {age1}, {chest2}, {addition2}, {hair1}, {pose2}, {place4}, {style1}"
-# prompt = f"{quality1}, {test16}, {place4}"
-# prompt = f"{quality1}, {person1}, {hair1}, {hip1}, {panty1}, {place4}"
 prompt = f"{quality1}, {quality5}, {angle11}, {person1}, {style1}, {age1}, {face1}, {hairlength7}, {chest1}, {cloth6}, ({pose4}:1.1), {place5}, {light1}"
-
+#prompt = "A woman in an elegant pose on a beach bathed in sunlight. She is wearing a summer dress, looking at the camera with a natural smile. The image is bright and colorful, conveying a positive atmosphere. In the background, the blue sky and sea stretch out, with a sense of a gentle breeze"
 negative_prompt = "illustration,3d,sepia,painting,cartoons,sketch,(worst quality:2),((monochrome)),((grayscale:1.2)),(backlight:1.2),analog,analog photo,(bad hands, bad fingers, bad arms, bad legs, bad knees, bad navel:1.5),Shank Hair,(nipples:1.2), (muscle:1.1),(extra fingers, extra arms, extra legs, extra digit, fewer digits:1.5),(text:1.3), signature, missing limb, missing fingers, nipples, 2 persons"
 
 def counter_file_check(counter=0):
     # スクリプトの実行回数の記録
     try:
-        with open("C:/Users/mokos/Stable_Diffusion/sd.webui/webui/outputs/api_output/script_counter.txt", "r") as file:
+        with open(f"{output_dir}script_counter.txt", "r") as file:
             counter = int(file.read().strip()) + 1
     except FileNotFoundError:
         counter = 0
 
     # スクリプトの実行回数を追記する
-    with open("C:/Users/mokos/Stable_Diffusion/sd.webui/webui/outputs/api_output/script_counter.txt", "w") as file:
+    with open(f"{output_dir}script_counter.txt", "w") as file:
         file.write(str(counter))
 
     return(counter)
@@ -223,7 +224,12 @@ def loop_crate_image(seed):
 
             pnginfo = PngImagePlugin.PngInfo()
             pnginfo.add_text("parameters", response2.json().get("info"))
-            image.save(f'C:/Users/mokos/Stable_Diffusion/sd.webui/webui/outputs/api_output/{counter}-{c + 1}-seed[{seed}].png', pnginfo=pnginfo)
+
+            if not os.path.exists(output_dir):
+                os.makedirs(output_dir)
+            
+            #image.save(f'C:/Users/mokos/Stable_Diffusion/sd.webui/webui/outputs/api_output/{counter}-{c + 1}-seed[{seed}].png', pnginfo=pnginfo)
+            image.save(f'{output_dir}{counter}-{c + 1}-seed[{seed}].png', pnginfo=pnginfo)
 
             # seed値に1を加えてループを終了(seed = -1 の場合はスルー)
             if seed == -1:
