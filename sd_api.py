@@ -20,6 +20,10 @@ prompt_file_path = 'korean.txt'
 with open(prompt_file_path, 'r', encoding='utf-8') as file:
     prompt = file.read().strip()
 
+n_prompt_file_path = 'n.korean.txt'
+with open(n_prompt_file_path, 'r', encoding='utf-8') as file:
+    negative_prompt = file.read().strip()
+
 override_settings = {}
 override_settings["sd_model_checkpoint"] = "BRAV5finalfp16.safetensors"
 #override_settings["sd_model_checkpoint"] = "chilloutmix_NiPrunedFp32Fix"
@@ -36,7 +40,7 @@ enable_hr = True
 
 #prompt = f"{quality1}, {quality5}, {angle11}, {person1}, {style1}, {age1}, {face1}, {hairlength7}, {chest1}, {cloth6}, {cloth8}, ({pose4}:1.1), {place5}, {light1}"
 #prompt = "A woman in an elegant pose on a beach bathed in sunlight. She is wearing a summer dress, looking at the camera with a natural smile. The image is bright and colorful, conveying a positive atmosphere. In the background, the blue sky and sea stretch out, with a sense of a gentle breeze"
-negative_prompt = "illustration,3d,sepia,painting,cartoons,sketch,(worst quality:2),((monochrome)),((grayscale:1.2)),(backlight:1.2),analog,analog photo,(bad hands, bad fingers, bad arms, bad legs, bad knees, bad navel:1.5),Shank Hair,(nipples:1.2), (muscle:1.1),(extra fingers, extra arms, extra legs, extra digit, fewer digits:1.5),(text:1.3), signature, missing limb, missing fingers, nipples, 2 persons"
+#negative_prompt = "illustration,3d,sepia,painting,cartoons,sketch,(worst quality:2),((monochrome)),((grayscale:1.2)),(backlight:1.2),analog,analog photo,(bad hands, bad fingers, bad arms, bad legs, bad knees, bad navel:1.5),Shank Hair,(nipples:1.2), (muscle:1.1),(extra fingers, extra arms, extra legs, extra digit, fewer digits:1.5),(text:1.3), signature, missing limb, missing fingers, nipples, 2 persons"
 
 def counter_file_check(counter=0):
     # スクリプトの実行回数の記録
@@ -96,6 +100,21 @@ def loop_crate_image(seed):
                 seed = -1
             else:
                 seed = seed + 1 
+
+        if not os.path.exists(f'{output_dir}prompt'):
+            os.makedirs(f'{output_dir}prompt')
+        
+        with open(f"{output_dir}prompt/prompt.txt", "a") as file:
+            file.write(f'date : {formatted_date}\n')
+            file.write(f'counter : {c}\n')
+            file.write(f'seed : {seed}\n')
+            file.write('prompt : \n')
+            file.write(f'{prompt}\n')
+            file.write('\n')
+            file.write('negative_prompt : \n')
+            file.write(f'{negative_prompt}\n')
+            file.write('\n')
+
 
         print(f"image created : {c + 1}")
         print(f"Prompt : {prompt}")
