@@ -6,6 +6,7 @@ import base64
 from PIL import Image, PngImagePlugin
 import time
 from datetime import datetime
+import random
 
 url = "http://127.0.0.1:7860"
 
@@ -34,7 +35,8 @@ override_settings["sd_model_checkpoint"] = "BRAV5finalfp16.safetensors"
 
 # loop and seed settings
 loop = 1
-seed = -1
+#seed = -1
+seed = random.randint(0, 99999)
 #enable_hr = False
 enable_hr = True
 
@@ -65,20 +67,19 @@ def loop_crate_image(seed):
             # "enable_hr": True,
             "enable_hr": enable_hr,
             "denoising_strength": 0.3,
-            "hr_scale": 2.05,
+            "hr_scale": 3.0,
             "hr_upscaler": "LDSR",
             "prompt": prompt,
-            "steps": 40,
+            "steps": 50,
             "seed": seed,
-            "width": 540,
-            "height": 960,
+            "width": 810,
+            "height": 810,
             "negative_prompt": negative_prompt,
             "sampler_index": "DPM++ SDE Karras",
             "override_settings": override_settings
         }
 
         response = requests.post(url=f'{url}/sdapi/v1/txt2img', json=payload)
-
         r = response.json()
 
         for i in r['images']:
@@ -92,15 +93,26 @@ def loop_crate_image(seed):
             pnginfo = PngImagePlugin.PngInfo()
             pnginfo.add_text("parameters", response2.json().get("info"))
             
+            # 'parameters'フィールドの追加
+            parameters_str = json.dumps(r.get("parameters", {}))
+            pnginfo.add_text("parameters", parameters_str)
+
             #image.save(f'C:/Users/mokos/Stable_Diffusion/sd.webui/webui/outputs/api_output/{counter}-{c + 1}-seed[{seed}].png', pnginfo=pnginfo)
             image.save(f'{output_dir}{counter}-{c + 1}-seed[{seed}].png', pnginfo=pnginfo)
+
+            # 画像ファイルを開く
+            img = Image.open(f'{output_dir}{counter}-{c + 1}-seed[{seed}].png')
+            # .info 属性からメタデータにアクセス
+            parameters_value = img.info.get("parameters", "デフォルト値")
+            # 使用例
+            print(parameters_value)
 
             # seed値に1を加えてループを終了(seed = -1 の場合はスルー)
             if seed == -1:
                 seed = -1
             else:
-                seed = seed + 1 
-
+                seed = seed + 1
+            
         if not os.path.exists(f'{output_dir}prompt'):
             os.makedirs(f'{output_dir}prompt')
         
